@@ -13,12 +13,15 @@ import DB
 
 
 def listMatrixImage(path):
+    count = 0;
     files = os.listdir(path)
     for file in files:
         element = file.split("_")
         with rasterio.open(path + file, 'r') as ds:
             arr = ds.read()[0]
             DB.insert(element[1], datetime.strptime(element[0], '%d%m%Y').date(), element[3], element[4], path+file, cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr[1].ravel())))
+            count += 1;
+            print(count)
 
 
 def outputMatrix(array):
@@ -41,5 +44,3 @@ listMatrixImage("D:/python/test/")
 # print(np.average(arr[1])) # середнє зважене
 # print(np.std(arr[1])) # середнє квадратичне відхилення
 # print(dict(Counter(arr[1].ravel())))  # частот входження унікальних значень у вибірку
-
-# connection.close()
