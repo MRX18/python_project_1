@@ -1,3 +1,5 @@
+from collections import Counter
+
 import rasterio
 import os
 import numpy as np
@@ -7,6 +9,7 @@ def listMatrixImage(path):
     images = []
     files = os.listdir(path)
     for file in files:
+        print(file.split("_"))
         with rasterio.open(path + file, 'r') as ds:
             images.append(ds.read()[0])
     return images
@@ -25,9 +28,10 @@ def cloudiness(array):
         for j in range(len(array[i])):
             if array[i][j] == 254 or array[i][j] == 255:
                 count += 1
-    return count/np.size(array)
+    return count / np.size(array)
 
 
 arr = listMatrixImage("D:/python/test/")
-#print(np.average(arr[1])) #середнє зважене
-#print(np.std(arr[1])) # середнє квадратичне відхилення
+# print(np.average(arr[1])) # середнє зважене
+# print(np.std(arr[1])) # середнє квадратичне відхилення
+#print(Counter(arr[1].ravel()))  # частот входження унікальних значень у вибірку
