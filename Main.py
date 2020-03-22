@@ -4,6 +4,7 @@ import rasterio
 import os
 import numpy as np
 from collections import Counter
+import matplotlib.pyplot as plt
 import DB
 
 globalCounter = 0
@@ -65,10 +66,46 @@ def outputFieldData():
     result = DB.select(field)
     print("%5s\t|\t%10s\t|\t%10s\t|\t%5s\t|\t%5s\t|\t%5s" % ("ID", "Date", "Field", "Cloudiness", "Average", "Srd"))
     for item in result:
-        print("%5d\t|\t%10s\t|\t%10s\t|\t%5s\t|\t%5s\t|\t%5s" % (item["id"], item["date"], item["field"], round(item["cloudiness"], 4), round(item["average"], 2), round(item["std"], 2)))
+        print("%5d\t|\t%10s\t|\t%10s\t|\t%5s\t|\t%5s\t|\t%5s" % (
+            item["id"], item["date"], item["field"], round(item["cloudiness"], 4), round(item["average"], 2),
+            round(item["std"], 2)))
+
+
+def histogram():
+    field = input("Введіть назву поля: ")
+    result = DB.selectForGrowingSeason(field, "", "")
+    bits = []
+    bits_frequency = []
+
+    for item in result:
+        bits.append(item["date"])
+        bits_frequency.append(item["cloudiness"])
+    ax = plt.axes()
+    ax.yaxis.grid(True, zorder=1)
+    xs = range(len(bits))
+    plt.bar([x for x in xs], bits_frequency, width=0.2, color='red', alpha=0.7, zorder=2)
+    plt.xticks(xs, bits)
+    plt.show()
+
+
+def visualizationStatisticalIndicators(): # Візуалізація статистичних показників
+    countField = input("Введіть кількість поля: ")
+    field = []
+    for i in range(int(countField)):
+        field.append(input("Введіть назву поля: "))
+    dateBegin = input("Введіть початкову дату: ")
+    dateEnd = input("Введіть кінцеву дату: ")
+    for i in range(int(countField)):
+        result = DB.selectForGrowingSeason(field[i], datetime.strptime(dateBegin, '%d.%m.%Y').date(),
+                                           datetime.strptime(dateEnd, '%d.%m.%Y').date())
+        localData = []
+        localDate = []
+        for item in result:
+            localDate.append(item["date"])
+            localData.append(item["average"])
+        plt.plot(localDate, localData)
+    plt.show()
 
 
 # createTask(3, 10) # test
-#createTask(5, 18181)
-
-outputFieldData()
+# createTask(5, 18181)
