@@ -1,7 +1,5 @@
 from datetime import datetime
-
-import pymysql
-from pymysql.cursors import DictCursor
+from threading import Thread
 import rasterio
 import os
 import numpy as np
@@ -9,8 +7,7 @@ from collections import Counter
 import DB
 
 
-# connection = pymysql.connect(host='127.0.0.1', user='root', password='12345', db='python', charset='utf8mb4', cursorclass=DictCursor)
-
+globalCounter = 0
 
 def listMatrixImage(path):
     count = 0;
@@ -22,6 +19,18 @@ def listMatrixImage(path):
             DB.insert(element[1], datetime.strptime(element[0], '%d%m%Y').date(), element[3], element[4], path+file, cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr[1].ravel())))
             count += 1;
             print(count)
+
+
+def taskListMatrixImage(path, taskId, begin, end):
+    files = os.listdir(path)
+    for i in range(int(begin), int(end)):
+        element = files[i].split("_")
+        with rasterio.open(path + files[i], 'r') as ds:
+            arr = ds.read()[0]
+            DB.insert(element[1], datetime.strptime(element[0], '%d%m%Y').date(), element[3], element[4], path+files[i], cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr[1].ravel())))
+            print(taskId)
+
+
 
 
 def outputMatrix(array):
@@ -40,7 +49,16 @@ def cloudiness(array):
     return count / np.size(array)
 
 
-listMatrixImage("D:/python/test/")
-# print(np.average(arr[1])) # середнє зважене
-# print(np.std(arr[1])) # середнє квадратичне відхилення
-# print(dict(Counter(arr[1].ravel())))  # частот входження унікальних значень у вибірку
+def createTask(threadsCount, records):
+    begin = 0
+    end = begin + records
+    for i in range(threadsCount):
+        thread = Thread(target=taskListMatrixImage, args=("D:/python/254_NDVI/", str(i), str(begin), str(end)))
+        thread.start()
+        print(begin)
+        begin = end;
+        end = begin + records
+
+
+#createTask(3, 10) # test
+createTask(5, 18181)
