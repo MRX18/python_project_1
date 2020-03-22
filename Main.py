@@ -1,3 +1,5 @@
+import ast
+import json
 from datetime import datetime
 from threading import Thread
 import rasterio
@@ -71,20 +73,31 @@ def outputFieldData():
             round(item["std"], 2)))
 
 
+def jsonEncoder(data):
+    j = []
+    for item in data:
+        array = []
+        array.append(list(ast.literal_eval(json.loads(item)).keys()))
+        array.append(list(ast.literal_eval(json.loads(item)).values()))
+        j.append(array)
+    return j
+
+
 def histogram():
     field = input("Введіть назву поля: ")
-    result = DB.selectForGrowingSeason(field, "", "")
-    bits = []
-    bits_frequency = []
-
+    date = input("Введіть початкову дату: ")
+    data = []
+    result = DB.selectForHistogram(field, datetime.strptime(date, '%d.%m.%Y').date())
     for item in result:
-        bits.append(item["date"])
-        bits_frequency.append(item["cloudiness"])
+        data.append(item["json"])
+    data = jsonEncoder(data)
+    print(data)
     ax = plt.axes()
     ax.yaxis.grid(True, zorder=1)
-    xs = range(len(bits))
-    plt.bar([x for x in xs], bits_frequency, width=0.2, color='red', alpha=0.7, zorder=2)
-    plt.xticks(xs, bits)
+    for item in data:
+        xs = range(len(item[0]))
+        plt.bar([x for x in xs], item[1], width=0.2, color='red', alpha=0.7, zorder=2)
+        plt.xticks(xs, item[0])
     plt.show()
 
 
@@ -109,3 +122,4 @@ def visualizationStatisticalIndicators(): # Візуалізація стати�
 
 # createTask(3, 10) # test
 # createTask(5, 18181)
+histogram()
