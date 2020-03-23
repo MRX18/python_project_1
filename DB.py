@@ -3,7 +3,6 @@ import threading
 import pymysql
 from pymysql.cursors import DictCursor
 
-
 mutex = threading.Lock()
 
 
@@ -34,6 +33,16 @@ def selectForGrowingSeason(field, dateBegin, dateEnd):
     with connection.cursor() as cursor:
         query = "SELECT * FROM python.data_image where (`field` = %s) and (`date` between %s and %s) and `cloudiness` < '0.5' Order By `date`"
         cursor.execute(query, (field, dateBegin, dateEnd))
+        connection.close()
+        return cursor.fetchall()
+
+
+def selectInYear(field, year):
+    connection = pymysql.connect(host='127.0.0.1', user='root', password='12345', db='python', charset='utf8mb4',
+                                 cursorclass=DictCursor)
+    with connection.cursor() as cursor:
+        query = 'SELECT * FROM python.data_image where (`field` = %s) and (DATE_FORMAT(`date`, "%%Y") = %s) Order By `date`'
+        cursor.execute(query, (field, year))
         connection.close()
         return cursor.fetchall()
 

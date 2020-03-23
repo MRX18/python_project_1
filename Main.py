@@ -86,9 +86,9 @@ def jsonEncoder(data):
     return j
 
 
-def histogram():
+def histogramVegetation():
     field = input("Введіть назву поля: ")
-    date = input("Введіть початкову дату: ")
+    date = input("Введіть дату: ")
     data = []
     result = DB.selectForHistogram(field, datetime.strptime(date, '%d.%m.%Y').date())
     for item in result:
@@ -123,6 +123,46 @@ def visualizationStatisticalIndicators():  # Візуалізація стати
     plt.show()
 
 
+def histogramInYear():
+    field = input("Введіть назву поля: ")
+    year = input("Введіть рік: ")
+    result = DB.selectInYear(field, year)
+    listDate = []
+    cloudyDays = []
+    partlyCloudyDays = []
+    clearDays = []
+    for item in result:
+        listDate.append(datetime.strftime(item["date"], '%m.%Y'))
+    listDate = np.unique(listDate)
+    for date in listDate:
+        cloud = 0
+        partly = 0
+        clear = 0
+        for item in result:
+            if date == (datetime.strftime(item["date"], '%m.%Y')):
+                if item["cloudiness"] == 1.0:
+                    cloud += 1
+                elif item["cloudiness"] == 0.0:
+                    clear += 1
+                else:
+                    partly += 1
+        cloudyDays.append(cloud)
+        partlyCloudyDays.append(partly)
+        clearDays.append(clear)
+    ax = plt.axes()
+    ax.yaxis.grid(True, zorder=1)
+    xs = range(len(listDate))
+    plt.title('Візуалізація частоти даних в розрізі місяців')
+    plt.bar([x + 0.05 for x in xs], clearDays, width=0.2, color='green', alpha=0.7, label='Ясні дні', zorder=2)
+    plt.bar([x + 0.3 for x in xs], partlyCloudyDays, width=0.2, color='blue', alpha=0.7, label='Частково захмарені дні', zorder=2)
+    plt.bar([x + 0.6 for x in xs], cloudyDays, width=0.2, color='red', alpha=0.7, label='Захмарені дні', zorder=2)
+    plt.xticks(xs, listDate)
+    plt.legend(loc='upper right')
+    plt.ylabel('Кількість')
+    plt.xlabel('Місяць')
+    plt.show()
+
 # createTask(3, 10) # test
 #createTask(20, 4546)
-histogram()
+#histogramVegetation()
+histogramInYear()
