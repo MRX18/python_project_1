@@ -12,7 +12,7 @@ import DB
 globalCounter = 0
 
 
-def listMatrixImage(path):
+def listMatrixImage(path="D:/python/test/"):
     count = 0;
     files = os.listdir(path)
     for file in files:
@@ -20,20 +20,23 @@ def listMatrixImage(path):
         with rasterio.open(path + file, 'r') as ds:
             arr = ds.read()[0]
             DB.insert(element[1], datetime.strptime(element[0], '%d%m%Y').date(), element[3], element[4], path + file,
-                      cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr[1].ravel())))
+                      cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr.ravel())))
             count += 1;
             print(count)
 
 
 def taskListMatrixImage(path, taskId, begin, end):
+    global globalCounter
     files = os.listdir(path)
     for i in range(int(begin), int(end)):
-        element = files[i].split("_")
-        with rasterio.open(path + files[i], 'r') as ds:
-            arr = ds.read()[0]
-            DB.insert(element[1], datetime.strptime(element[0], '%d%m%Y').date(), element[3], element[4],
-                      path + files[i], cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr[1].ravel())))
-            print(taskId)
+        if i != len(files):
+            element = files[i].split("_")
+            with rasterio.open(path + files[i], 'r') as ds:
+                arr = ds.read()[0]
+                DB.insert(element[1], datetime.strptime(element[0], '%d%m%Y').date(), element[3], element[4],
+                          path + files[i], cloudiness(arr), np.average(arr), np.std(arr), dict(Counter(arr.ravel())))
+                globalCounter += 1
+                print("ID: %s\t Count: %d" % (taskId, globalCounter))
 
 
 def outputMatrix(array):
@@ -49,7 +52,7 @@ def cloudiness(array):
         for j in range(len(array[i])):
             if array[i][j] == 254 or array[i][j] == 255:
                 count += 1
-    return count / np.size(array)
+    return count / (np.size(array) - dict(Counter(array.ravel()))[0])
 
 
 def createTask(threadsCount, records):
@@ -101,7 +104,7 @@ def histogram():
     plt.show()
 
 
-def visualizationStatisticalIndicators(): # Візуалізація статистичних показників
+def visualizationStatisticalIndicators():  # Візуалізація статистичних показників
     countField = input("Введіть кількість поля: ")
     field = []
     for i in range(int(countField)):
@@ -121,5 +124,5 @@ def visualizationStatisticalIndicators(): # Візуалізація стати�
 
 
 # createTask(3, 10) # test
-# createTask(5, 18181)
+#createTask(20, 4546)
 histogram()

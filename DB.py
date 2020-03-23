@@ -1,9 +1,14 @@
 import json
+import threading
 import pymysql
 from pymysql.cursors import DictCursor
 
 
+mutex = threading.Lock()
+
+
 def insert(field, date, ndvi, other_data, path, cloudiness, avg, std, sampling_rate):
+    mutex.acquire()
     connection = pymysql.connect(host='127.0.0.1', user='root', password='12345', db='python', charset='utf8mb4',
                                  cursorclass=DictCursor)
     with connection.cursor() as cursor:
@@ -11,6 +16,7 @@ def insert(field, date, ndvi, other_data, path, cloudiness, avg, std, sampling_r
         cursor.execute(query, (field, date, ndvi, other_data, str(path), float(cloudiness), float(avg), float(std),
                                json.dumps(str(sampling_rate))))
         connection.commit()
+    mutex.release()
 
 
 def select(field):
