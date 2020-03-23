@@ -7,6 +7,7 @@ import os
 import numpy as np
 from collections import Counter
 import matplotlib.pyplot as plt
+import logging
 import DB
 
 globalCounter = 0
@@ -105,7 +106,7 @@ def histogramVegetation():
 
 
 def visualizationStatisticalIndicators():  # Візуалізація статистичних показників
-    countField = input("Введіть кількість поля: ")
+    countField = input("Введіть кількість полів: ")
     field = []
     for i in range(int(countField)):
         field.append(input("Введіть назву поля: "))
@@ -162,7 +163,27 @@ def histogramInYear():
     plt.xlabel('Місяць')
     plt.show()
 
+
+def menu():
+    while True:
+        print("1 - Дані по полю")
+        print("2 - Візуалізація статистичних показників для поля (по ID) за вегетаційний сезон")
+        print("3 - Візуалізація «чистоти» даних в розрізі місяців")
+        print("4 - Візуалізація гістограм частот по обраному полю (ID) за обрану дату.")
+        num = input("Виберіть дію: ")
+        method = [outputFieldData, visualizationStatisticalIndicators, histogramInYear, histogramVegetation]
+        try:
+            method[int(num) - 1]()
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
+        e = input("Для виходу натисніть (e): ")
+        if e == 'e' or e == 'E':
+            break
+
+
+menu()
 # createTask(3, 10) # test
-#createTask(20, 4546)
-#histogramVegetation()
-histogramInYear()
+# createTask(20, 4546)
